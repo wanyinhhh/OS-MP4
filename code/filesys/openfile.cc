@@ -126,7 +126,6 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
     if ((position + numBytes) > fileLength)		
 	numBytes = fileLength - position;
     DEBUG(dbgFile, "Reading " << numBytes << " bytes at " << position << " from file of length " << fileLength);
-    //DEBUG(dbgSys, "Reading " << numBytes << " bytes at " << position << " from file of length " << fileLength);
 
     firstSector = divRoundDown(position, SectorSize);
     lastSector = divRoundDown(position + numBytes - 1, SectorSize);
@@ -192,8 +191,14 @@ OpenFile::WriteAt(char *from, int numBytes, int position)
 
 int
 OpenFile::Length() 
-{ 
-    return hdr->FileLength(); 
+{
+    int numbytes_of_file = 0; 
+    FileHeader* check_hdr = hdr;
+    while (check_hdr != NULL) { 
+        numbytes_of_file = numbytes_of_file +  check_hdr->FileLength();
+        check_hdr = check_hdr->GetNextFileHeader();
+    } 
+    return numbytes_of_file; 
 }
 
 #endif //FILESYS_STUB

@@ -56,15 +56,29 @@ class FileHeader {
 
     void Print();			// Print the contents of the file.
 
+
+    // Get next_hdr
+    FileHeader* GetNextFileHeader() {
+      if (next_hdr_dataasector == -1) {
+          return NULL;
+      } else {
+          return next_hdr;
+      }
+    }
+
+    FileHeader* next_hdr;
+
   private:
     int numBytes;			// Number of bytes in the file
     int numSectors;			// Number of data sectors in the file
     int dataSectors[NumDirect];		// Disk sector numbers for each data 
 					// block in the file
+    
+    // find next  
     int next_numBytes;
     int next_numSectors;
     int next_hdr_dataasector;
-    FileHeader* next_hdr;
+    
 };
 
 #endif // FILEHDR_H

@@ -29,6 +29,7 @@
 #include "synchdisk.h"
 #include "main.h"
 
+
 //----------------------------------------------------------------------
 // FileHeader::Allocate
 // 	Initialize a fresh file header for a newly created file.
@@ -208,3 +209,5 @@ FileHeader::Print()
     }
     delete [] data;
 }
+
+

@@ -154,11 +154,23 @@ class FileSystem {
 
     OpenFile* Open(char *name); 	// Open a file (UNIX open)
 
+    // NachOS FS
+    OpenFileId OpenAFile(char *name);
+    int WriteFile(char *buffer, int size, OpenFileId id);
+    int ReadFile(char *buffer, int size, OpenFileId id);
+    int CloseFile(OpenFileId id);
+    int search_empty_idx();
+    void MakeDirectory(char *name);
+    // Max Open File = 20
+    OpenFile *OpenFileTable[20];
+    char* OpenFileName[20];
+
     bool Remove(char *name);  		// Delete a file (UNIX unlink)
 
     void List();			// List all the files in the file system
 
     void Print();			// List all the files and their contents
+
 
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,

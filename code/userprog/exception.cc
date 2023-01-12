@@ -78,7 +78,8 @@ ExceptionHandler(ExceptionType which)
 			return;
 			ASSERTNOTREACHED();
 		    break;
-
+			
+		#ifndef FILESYS_STUB
 	    case SC_Open:
 			DEBUG(dbgSys, "Open a file, initiated by user program.\n");
 			val = kernel->machine->ReadRegister(4);
@@ -230,6 +231,102 @@ ExceptionHandler(ExceptionType which)
       	    default:
 		cerr << "Unexpected system call " << type << "\n";
 	    break;
+
+		#else // FILESYS
+		  case SC_Open:
+			DEBUG(dbgSys, "Open a file, initiated by user program.\n");
+			val = kernel->machine->ReadRegister(4);
+			{
+      // accquire the filename from main memory
+			char *filename = &(kernel->machine->mainMemory[val]);
+			// cout << filename << endl;
+			status = SysOpen  (filename);
+			kernel->machine->WriteRegister(2, (int) status);
+			}
+			// Set Program Counter
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+			return;
+			ASSERTNOTREACHED();
+		    break;
+
+  	    case SC_Write:
+			DEBUG(dbgSys, "Write a file, initiated by user program.\n");
+	    	numChar = kernel->machine->ReadRegister(4);
+	    	{
+      // accquire the char let this char write into the file 
+			char *buffer = &(kernel->machine->mainMemory[numChar]);
+			//cout << buffer << endl;
+      // return the number of characters actually written to the file
+			status = SysWrite(buffer, (int)kernel->machine->ReadRegister(5), (int)kernel->machine->ReadRegister(6));
+			kernel->machine->WriteRegister(2, (int) status);
+			}
+			// check if successfully Write a file
+			if (status != -1) {
+				DEBUG(dbgSys, "Successfully Write a file, initiated by user program.\n");
+			} else {
+				DEBUG(dbgSys, "Fail to write a file, initiated by user program.\n");
+			}
+
+			// Set Program Counter
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+
+			return;
+	        ASSERTNOTREACHED();
+	  	    break;
+
+  	    case SC_Read:
+		
+			DEBUG(dbgSys, "Read a file, initiated by user program.\n");
+	    	numChar = kernel->machine->ReadRegister(4);
+	    	{
+            // accquire the buffer to "read" form the file to the buffer 
+			char *buffer = &(kernel->machine->mainMemory[numChar]);
+			status = SysRead(buffer, (int)kernel->machine->ReadRegister(5), (int)kernel->machine->ReadRegister(6));
+			kernel->machine->WriteRegister(2, (int) status);
+			}
+			// check if successfully Read a file
+			if (status != -1) {
+				DEBUG(dbgSys, "Successfully read a file, initiated by user program.\n");
+			} else {
+				DEBUG(dbgSys, "Fail to read a file, initiated by user program.\n");
+			}
+
+			// Set Program Counter
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+
+			return;
+	        ASSERTNOTREACHED();
+	  	    break;
+
+	  	    case SC_Close:
+			DEBUG(dbgSys, "Close a file, initiated by user program.\n");
+	    	val = kernel->machine->ReadRegister(4);
+	    	
+	    	{
+			status = SysClose(val);
+			kernel->machine->WriteRegister(2, (int) status);
+			}
+
+			if (status == 1) {
+				DEBUG(dbgSys, "Successfully close a file, initiated by user program.\n");
+			}
+			
+
+			// Set Program Counter
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+
+			return;
+	        ASSERTNOTREACHED();
+	  	    break;
+		#endif
 	}
 	break;
 	default:

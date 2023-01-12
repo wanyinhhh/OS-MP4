@@ -16,6 +16,7 @@
 #include "synchconsole.h"
 
 
+
 void SysHalt()
 {
   kernel->interrupt->Halt();
@@ -33,6 +34,7 @@ int SysAdd(int op1, int op2)
   return op1 + op2;
 }
 
+#ifndef FILESYS_STUB
 int SysCreate(char *filename)
 {
 	// return value
@@ -61,5 +63,37 @@ int SysClose(int id){
   return kernel->fileSystem->CloseFile(id);
 
 }
+#else // FILESYS 
+// MP4
+int SysCreate(char *filename, int size)
+{
+	// return value
+	// 1: success
+	// 0: failed
+	return kernel->fileSystem->Create(filename);
+}
+
+//When you finish the function "OpenAFile", you can remove the comment below.
+
+OpenFileId SysOpen(char *name)
+{
+  return kernel->fileSystem->OpenAFile(name);
+}
+
+int SysWrite(char *buffer, int size, int id){
+  return kernel->fileSystem->WriteFile(buffer, size, id);
+}
+
+int SysRead(char *buffer, int size, int id){
+  return kernel->fileSystem->ReadFile(buffer, size, id);
+
+}
+
+int SysClose(int id){
+  return kernel->fileSystem->CloseFile(id);
+
+}
+
+#endif
 
 #endif /* ! __USERPROG_KSYSCALL_H__ */

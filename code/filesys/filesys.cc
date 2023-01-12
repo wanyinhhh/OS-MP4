@@ -337,4 +337,75 @@ FileSystem::Print()
     delete directory;
 } 
 
+OpenFileId OpenAFile(char *name) {
+    int sector = OpenForReadWrite(name, FALSE);
+    if(sector == -1) return -1;
+    int file_idx = this->search_empty_idx();
+    if (file_idx == -1) {
+        return -1;
+    }
+    OpenFile* of = new OpenFile(sector);
+    if(of == NULL){
+        return -1;
+    }
+    OpenFileTable[file_idx] = of;
+    OpenFileName[file_idx] = name;
+    return file_idx;
+} 
+int WriteFile(char *buffer, int size, OpenFileId id){
+    // Check if id is in the range: 0-19 
+    if(!(id >= 0 && id < 20)) return -1;
+    // Check if this id exists
+    if(OpenFileTable[id] == NULL) return -1;
+    return OpenFileTable[id]->Write(buffer, size);
+}
+
+int ReadFile(char *buffer, int size, OpenFileId id){
+    // Check if id is in the range: 0-19 
+    if(!(id >= 0 && id < 20)) return -1;
+    // Check if this id exists
+    if(OpenFileTable[id] == NULL) return -1;
+    return OpenFileTable[id]->Read(buffer, size);
+}
+int CloseFile(OpenFileId id){
+    // Check if id is in the range: 0-19 
+    if(id < 0 || id >= 20) return -1;
+    // Check if this id exists
+    if(OpenFileTable[id] == NULL) return -1;
+    // cout << "OpenFileTable[id] : " << OpenFileTable[id] << "\n";  
+    // delete the OpenFile after closing the file
+    delete OpenFileTable[id];
+    // re-set
+    OpenFileName[id] = NULL;
+    OpenFileTable[id] = NULL;
+    //OpenFileTable[id]->~OpenFile();
+    // if (!this->Remove(OpenFileName[id])) {
+    //   return -1;
+    // }
+    return 1;
+}
+int search_empty_idx() {
+    // return the empty index which is OpenFileId
+    for (int idx = 0; idx < 20; idx++) {
+        if (OpenFileTable[idx] == NULL) {
+            return idx;
+        }
+    }
+    return -1;
+}
+
+
+void MakeDirectory(char *name)
+{
+	
+}
+void Rec_ListDirectory(char *name)
+{
+	
+}
+void Rec_RemoveFileDirectory(char *name)
+{
+	
+}
+
 #endif // FILESYS_STUB
