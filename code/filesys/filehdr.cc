@@ -43,16 +43,42 @@
 bool
 FileHeader::Allocate(PersistentBitmap *freeMap, int fileSize)
 { 
-    numBytes = fileSize;
-    numSectors  = divRoundUp(fileSize, SectorSize);
+
+    if (fileSize > MaxFileSize) { // find next
+        numBytes = MaxFileSize;
+        next_numBytes = fileSize - MaxFileSize;
+        numSectors = divRoundUp(numBytes, SectorSize); 
+        next_numSectors = divRoundUp(next_numBytes, SectorSize);
+        next_hdr_dataasector = -1;
+    } else  {
+        numBytes = fileSize;
+        next_numBytes = -1;
+        numSectors  = divRoundUp(numBytes, SectorSize);
+        next_numSectors = -1;
+        next_hdr_dataasector = -1;
+    }
+
+    // numSectors  = divRoundUp(fileSize, SectorSize);
     if (freeMap->NumClear() < numSectors)
-	return FALSE;		// not enough space
+	    return FALSE;		// not enough space
+
 
     for (int i = 0; i < numSectors; i++) {
-	dataSectors[i] = freeMap->FindAndSet();
-	// since we checked that there was enough free space,
-	// we expect this to succeed
-	ASSERT(dataSectors[i] >= 0);
+        dataSectors[i] = freeMap->FindAndSet();
+        // since we checked that there was enough free space,
+        // we expect this to succeed
+        ASSERT(dataSectors[i] >= 0);
+    }
+
+    // Allocate next fileheader 
+    if (next_numBytes != -1) {
+        next_hdr_dataasector = freeMap->FindAndSet();
+            if (next_hdr_dataasector == -1) { // no free block space
+                return FALSE;
+            } else {
+                next_hdr = new FileHeader;
+                return next_hdr->Allocate(freeMap, next_numBytes);
+            }
     }
     return TRUE;
 }
@@ -67,9 +93,17 @@ FileHeader::Allocate(PersistentBitmap *freeMap, int fileSize)
 void 
 FileHeader::Deallocate(PersistentBitmap *freeMap)
 {
-    for (int i = 0; i < numSectors; i++) {
-	ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
-	freeMap->Clear((int) dataSectors[i]);
+    if (next_hdr_dataasector == -1) { 
+        for (int i = 0; i < numSectors; i++) {
+            ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
+            freeMap->Clear((int) dataSectors[i]);
+        }
+    } else {
+        for (int i = 0; i < numSectors; i++) {
+            ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
+            freeMap->Clear((int) dataSectors[i]);
+        }
+        return next_hdr->Deallocate(freeMap);
     }
 }
 
@@ -82,8 +116,15 @@ FileHeader::Deallocate(PersistentBitmap *freeMap)
 
 void
 FileHeader::FetchFrom(int sector)
-{
-    kernel->synchDisk->ReadSector(sector, (char *)this);
+{   
+    if (next_hdr_dataasector == -1) { // only one
+        kernel->synchDisk->ReadSector(sector, (char *)this + sizeof(FileHeader*));    
+    } else {
+        kernel->synchDisk->ReadSector(sector, (char *)this + sizeof(FileHeader*));
+        next_hdr = new FileHeader;
+        return next_hdr->FetchFrom(next_hdr_dataasector);
+    }
+    // kernel->synchDisk->ReadSector(sector, (char *)this + sizeof(FileHeader*));
 }
 
 //----------------------------------------------------------------------
@@ -95,8 +136,14 @@ FileHeader::FetchFrom(int sector)
 
 void
 FileHeader::WriteBack(int sector)
-{
-    kernel->synchDisk->WriteSector(sector, (char *)this); 
+{   
+    if (next_hdr_dataasector == -1) { // only one
+        kernel->synchDisk->WriteSector(sector, (char *)this + sizeof(FileHeader*)); 
+    } else {
+        kernel->synchDisk->WriteSector(sector, (char *)this + sizeof(FileHeader*)); 
+        return next_hdr->WriteBack(next_hdr_dataasector);
+    }
+    // kernel->synchDisk->WriteSector(sector, (char *)this + sizeof(FileHeader*)); 
 }
 
 //----------------------------------------------------------------------
@@ -112,7 +159,13 @@ FileHeader::WriteBack(int sector)
 int
 FileHeader::ByteToSector(int offset)
 {
-    return(dataSectors[offset / SectorSize]);
+    int sector_index = offset / SectorSize;
+    if (sector_index < NumDirect) { // only one
+        return(dataSectors[sector_index]);
+    } else {
+        return next_hdr->ByteToSector((sector_index-NumDirect)*SectorSize);
+    }
+    // return(dataSectors[offset / SectorSize]);
 }
 
 //----------------------------------------------------------------------
@@ -140,17 +193,18 @@ FileHeader::Print()
 
     printf("FileHeader contents.  File size: %d.  File blocks:\n", numBytes);
     for (i = 0; i < numSectors; i++)
-	printf("%d ", dataSectors[i]);
+	    printf("%d ", dataSectors[i]);
     printf("\nFile contents:\n");
+
     for (i = k = 0; i < numSectors; i++) {
-	kernel->synchDisk->ReadSector(dataSectors[i], data);
-        for (j = 0; (j < SectorSize) && (k < numBytes); j++, k++) {
-	    if ('\040' <= data[j] && data[j] <= '\176')   // isprint(data[j])
-		printf("%c", data[j]);
-            else
-		printf("\\%x", (unsigned char)data[j]);
-	}
-        printf("\n"); 
+        kernel->synchDisk->ReadSector(dataSectors[i], data);
+            for (j = 0; (j < SectorSize) && (k < numBytes); j++, k++) {
+                if ('\040' <= data[j] && data[j] <= '\176')   // isprint(data[j])
+                    printf("%c", data[j]);
+                else
+                    printf("\\%x", (unsigned char)data[j]);
+            }
+            printf("\n"); 
     }
     delete [] data;
 }
