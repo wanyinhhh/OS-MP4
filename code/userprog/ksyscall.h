@@ -35,12 +35,13 @@ int SysAdd(int op1, int op2)
 }
 
 #ifndef FILESYS_STUB
-int SysCreate(char *filename)
+
+int SysCreate(char *filename, int size)
 {
 	// return value
 	// 1: success
 	// 0: failed
-	return kernel->fileSystem->Create(filename);
+	return kernel->fileSystem->Create(filename, size);
 }
 
 //When you finish the function "OpenAFile", you can remove the comment below.
@@ -63,9 +64,10 @@ int SysClose(int id){
   return kernel->fileSystem->CloseFile(id);
 
 }
+
 #else // FILESYS 
-// MP4
-int SysCreate(char *filename, int size)
+
+int SysCreate(char *filename)
 {
 	// return value
 	// 1: success

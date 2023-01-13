@@ -41,22 +41,31 @@
 //	"fileSize" is the bit map of free disk sectors
 //----------------------------------------------------------------------
 
+FileHeader::FileHeader()
+{
+    // MP4 
+    // initial value
+    numBytes = -1;
+    numSectors = -1;
+    next_numBytes = -1;
+    next_numSectors = -1;
+    next_hdr_datasector = -1;
+    next_hdr = NULL;
+}
+
 bool
 FileHeader::Allocate(PersistentBitmap *freeMap, int fileSize)
 { 
-
     if (fileSize > MaxFileSize) { // find next
         numBytes = MaxFileSize;
         next_numBytes = fileSize - MaxFileSize;
         numSectors = divRoundUp(numBytes, SectorSize); 
         next_numSectors = divRoundUp(next_numBytes, SectorSize);
-        next_hdr_dataasector = -1;
-    } else  {
+    } else { // Only one
         numBytes = fileSize;
         next_numBytes = -1;
         numSectors  = divRoundUp(numBytes, SectorSize);
         next_numSectors = -1;
-        next_hdr_dataasector = -1;
     }
 
     // numSectors  = divRoundUp(fileSize, SectorSize);
@@ -73,8 +82,8 @@ FileHeader::Allocate(PersistentBitmap *freeMap, int fileSize)
 
     // Allocate next fileheader 
     if (next_numBytes != -1) {
-        next_hdr_dataasector = freeMap->FindAndSet();
-            if (next_hdr_dataasector == -1) { // no free block space
+        next_hdr_datasector = freeMap->FindAndSet();
+            if (next_hdr_datasector == -1) { // no free block space
                 return FALSE;
             } else {
                 next_hdr = new FileHeader;
@@ -94,17 +103,17 @@ FileHeader::Allocate(PersistentBitmap *freeMap, int fileSize)
 void 
 FileHeader::Deallocate(PersistentBitmap *freeMap)
 {
-    if (next_hdr_dataasector == -1) { 
+    if (next_hdr_datasector == -1) {  // only one
         for (int i = 0; i < numSectors; i++) {
             ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
             freeMap->Clear((int) dataSectors[i]);
         }
-    } else {
+    } else { 
         for (int i = 0; i < numSectors; i++) {
             ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
             freeMap->Clear((int) dataSectors[i]);
         }
-        return next_hdr->Deallocate(freeMap);
+        next_hdr->Deallocate(freeMap);
     }
 }
 
@@ -118,12 +127,12 @@ FileHeader::Deallocate(PersistentBitmap *freeMap)
 void
 FileHeader::FetchFrom(int sector)
 {   
-    if (next_hdr_dataasector == -1) { // only one
+    if (next_hdr_datasector == -1) { // only one
         kernel->synchDisk->ReadSector(sector, (char *)this + sizeof(FileHeader*));    
     } else {
         kernel->synchDisk->ReadSector(sector, (char *)this + sizeof(FileHeader*));
         next_hdr = new FileHeader;
-        return next_hdr->FetchFrom(next_hdr_dataasector);
+        next_hdr->FetchFrom(next_hdr_datasector);
     }
     // kernel->synchDisk->ReadSector(sector, (char *)this + sizeof(FileHeader*));
 }
@@ -138,11 +147,11 @@ FileHeader::FetchFrom(int sector)
 void
 FileHeader::WriteBack(int sector)
 {   
-    if (next_hdr_dataasector == -1) { // only one
+    if (next_hdr_datasector == -1) { // only one
         kernel->synchDisk->WriteSector(sector, (char *)this + sizeof(FileHeader*)); 
     } else {
         kernel->synchDisk->WriteSector(sector, (char *)this + sizeof(FileHeader*)); 
-        return next_hdr->WriteBack(next_hdr_dataasector);
+        next_hdr->WriteBack(next_hdr_datasector);
     }
     // kernel->synchDisk->WriteSector(sector, (char *)this + sizeof(FileHeader*)); 
 }

@@ -37,11 +37,13 @@ Thread::Thread(char* threadName, int threadID)
 {
 	ID = threadID;
     name = threadName;
+    // MP3
     CPUBurstTime = 0;
     apprBurstTime = 0;
     lastCPU = 0;
     waitingTime = 0;
     priority = kernel->execPriority[threadID];
+
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
@@ -201,6 +203,8 @@ Thread::Finish ()
 //
 // 	Similar to Thread::Sleep(), but a little different.
 //----------------------------------------------------------------------
+
+// MP3
 void Thread::AccumulateBurstTime(int now){
     CPUBurstTime += now - lastCPU;
     lastCPU = now;
@@ -261,6 +265,7 @@ Thread::Yield ()
 //	off the ready list, and switching to it.
 //----------------------------------------------------------------------
 
+// MP3
 void Thread::UpdateBurst(int now){
     
     double old = apprBurstTime;

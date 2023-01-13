@@ -118,6 +118,8 @@ typedef int OpenFileId;
 /* Return 1 on success, negative error code on failure */
 int Create(char *name);
 
+int Create(char *name, int size);
+
 /* Remove a Nachos file, with name "name" */
 int Remove(char *name);
 

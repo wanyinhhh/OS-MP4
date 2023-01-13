@@ -78,7 +78,7 @@ ExceptionHandler(ExceptionType which)
 			return;
 			ASSERTNOTREACHED();
 		    break;
-			
+
 		#ifndef FILESYS_STUB
 	    case SC_Open:
 			DEBUG(dbgSys, "Open a file, initiated by user program.\n");
@@ -151,7 +151,7 @@ ExceptionHandler(ExceptionType which)
 	        ASSERTNOTREACHED();
 	  	    break;
 
-	  	    case SC_Close:
+	  	case SC_Close:
 			DEBUG(dbgSys, "Close a file, initiated by user program.\n");
 	    	val = kernel->machine->ReadRegister(4);
 	    	
@@ -184,56 +184,71 @@ ExceptionHandler(ExceptionType which)
 			SysHalt();
 			ASSERTNOTREACHED();
 		    break;
-	    case SC_Create:
-		val = kernel->machine->ReadRegister(4);
-		{
-		char *filename = &(kernel->machine->mainMemory[val]);
-		//cout << filename << endl;
-		status = SysCreate(filename);
-		kernel->machine->WriteRegister(2, (int) status);
-		}
-		kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
-		kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
-		kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
-		return;
-		ASSERTNOTREACHED();
-	    break;
-      	    case SC_Add:
-		DEBUG(dbgSys, "Add " << kernel->machine->ReadRegister(4) << " + " << kernel->machine->ReadRegister(5) << "\n");
-		/* Process SysAdd Systemcall*/
-		int result;
-		result = SysAdd(/* int op1 */(int)kernel->machine->ReadRegister(4),
-		/* int op2 */(int)kernel->machine->ReadRegister(5));
-		DEBUG(dbgSys, "Add returning with " << result << "\n");
-		/* Prepare Result */
-		kernel->machine->WriteRegister(2, (int)result);	
-		/* Modify return point */
-		{
-		/* set previous programm counter (debugging only)*/
-		kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
-			
-		/* set programm counter to next instruction (all Instructions are 4 byte wide)*/
-		kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
-	  
-		/* set next programm counter for brach execution */
-		kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
-		}
-		cout << "result is " << result << "\n";	
-		return;	
-		ASSERTNOTREACHED();
-	    break;
+	    case SC_Create: // FILESYS_STUB
+			val = kernel->machine->ReadRegister(4);
+			{
+			char *filename = &(kernel->machine->mainMemory[val]);
+			int Size = kernel->machine->ReadRegister(5);
+			//cout << filename << endl;
+			status = SysCreate(filename, Size);
+			kernel->machine->WriteRegister(2, (int) status);
+			}
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+			return;
+			ASSERTNOTREACHED();
+			break;
+      	case SC_Add:
+			DEBUG(dbgSys, "Add " << kernel->machine->ReadRegister(4) << " + " << kernel->machine->ReadRegister(5) << "\n");
+			/* Process SysAdd Systemcall*/
+			int result;
+			result = SysAdd(/* int op1 */(int)kernel->machine->ReadRegister(4),
+			/* int op2 */(int)kernel->machine->ReadRegister(5));
+			DEBUG(dbgSys, "Add returning with " << result << "\n");
+			/* Prepare Result */
+			kernel->machine->WriteRegister(2, (int)result);	
+			/* Modify return point */
+			{
+			/* set previous programm counter (debugging only)*/
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+				
+			/* set programm counter to next instruction (all Instructions are 4 byte wide)*/
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+		
+			/* set next programm counter for brach execution */
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+			}
+			cout << "result is " << result << "\n";	
+			return;	
+			ASSERTNOTREACHED();
+			break;
 	    case SC_Exit:
 			DEBUG(dbgAddr, "Program exit\n");
             		val=kernel->machine->ReadRegister(4);
             		cout << "return value:" << val << endl;
 			kernel->currentThread->Finish();
             break;
-      	    default:
-		cerr << "Unexpected system call " << type << "\n";
+      	default:
+			cerr << "Unexpected system call " << type << "\n";
 	    break;
 
 		#else // FILESYS
-		  case SC_Open:
+		case SC_Create: // FILESYS
+			val = kernel->machine->ReadRegister(4);
+			{
+			char *filename = &(kernel->machine->mainMemory[val]);
+			//cout << filename << endl;
+			status = SysCreate(filename);
+			kernel->machine->WriteRegister(2, (int) status);
+			}
+			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));
+			kernel->machine->WriteRegister(PCReg, kernel->machine->ReadRegister(PCReg) + 4);
+			kernel->machine->WriteRegister(NextPCReg, kernel->machine->ReadRegister(PCReg)+4);
+			return;
+			ASSERTNOTREACHED();
+			break;
+		case SC_Open:
 			DEBUG(dbgSys, "Open a file, initiated by user program.\n");
 			val = kernel->machine->ReadRegister(4);
 			{
@@ -304,7 +319,7 @@ ExceptionHandler(ExceptionType which)
 	        ASSERTNOTREACHED();
 	  	    break;
 
-	  	    case SC_Close:
+	  	case SC_Close:
 			DEBUG(dbgSys, "Close a file, initiated by user program.\n");
 	    	val = kernel->machine->ReadRegister(4);
 	    	
@@ -316,7 +331,6 @@ ExceptionHandler(ExceptionType which)
 			if (status == 1) {
 				DEBUG(dbgSys, "Successfully close a file, initiated by user program.\n");
 			}
-			
 
 			// Set Program Counter
 			kernel->machine->WriteRegister(PrevPCReg, kernel->machine->ReadRegister(PCReg));

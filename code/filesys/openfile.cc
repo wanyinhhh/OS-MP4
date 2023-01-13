@@ -146,7 +146,8 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
 int
 OpenFile::WriteAt(char *from, int numBytes, int position)
 {
-    int fileLength = hdr->FileLength();
+    // int fileLength = hdr->FileLength();
+    int fileLength = Length();
     int i, firstSector, lastSector, numSectors;
     bool firstAligned, lastAligned;
     char *buf;

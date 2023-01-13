@@ -37,6 +37,10 @@
 
 class FileHeader {
   public:
+    // MP4 
+    // initial value
+    FileHeader();
+
     bool Allocate(PersistentBitmap *bitMap, int fileSize);// Initialize a file header, 
 						//  including allocating space 
 						//  on disk for the file data
@@ -56,10 +60,10 @@ class FileHeader {
 
     void Print();			// Print the contents of the file.
 
-
+    // MP4
     // Get next_hdr
     FileHeader* GetNextFileHeader() {
-      if (next_hdr_dataasector == -1) {
+      if (next_hdr_datasector == -1) {
           return NULL;
       } else {
           return next_hdr;
@@ -77,7 +81,7 @@ class FileHeader {
     // find next  
     int next_numBytes;
     int next_numSectors;
-    int next_hdr_dataasector;
+    int next_hdr_datasector;
     
 };
 

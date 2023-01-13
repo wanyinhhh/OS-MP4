@@ -105,7 +105,7 @@ class Thread {
 	int getID() { return (ID); }
     void Print() { cout << name; }
     void SelfTest();		// test whether thread impl is working
-    //
+    // MP3
     void AccumulateBurstTime(int now);
     void resetWaiting (int now);
     void UpdateBurst(int endTime);
@@ -117,6 +117,7 @@ class Thread {
   int lastWait;
   int waitingTime;
   int priority;
+  
   private:
     // some of the private data for this class is listed above
     

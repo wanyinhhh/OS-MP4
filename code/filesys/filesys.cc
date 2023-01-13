@@ -62,7 +62,7 @@
 // supports extensible files, the directory size sets the maximum number 
 // of files that can be loaded onto the disk.
 #define FreeMapFileSize 	(NumSectors / BitsInByte)
-#define NumDirEntries 		10
+#define NumDirEntries 		10 
 #define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
 
 //----------------------------------------------------------------------
@@ -337,7 +337,9 @@ FileSystem::Print()
     delete directory;
 } 
 
-OpenFileId OpenAFile(char *name) {
+
+// MP4
+OpenFileId FileSystem::OpenAFile(char *name) {
     int sector = OpenForReadWrite(name, FALSE);
     if(sector == -1) return -1;
     int file_idx = this->search_empty_idx();
@@ -352,7 +354,7 @@ OpenFileId OpenAFile(char *name) {
     OpenFileName[file_idx] = name;
     return file_idx;
 } 
-int WriteFile(char *buffer, int size, OpenFileId id){
+int FileSystem::WriteFile(char *buffer, int size, OpenFileId id){
     // Check if id is in the range: 0-19 
     if(!(id >= 0 && id < 20)) return -1;
     // Check if this id exists
@@ -360,14 +362,14 @@ int WriteFile(char *buffer, int size, OpenFileId id){
     return OpenFileTable[id]->Write(buffer, size);
 }
 
-int ReadFile(char *buffer, int size, OpenFileId id){
+int FileSystem::ReadFile(char *buffer, int size, OpenFileId id){
     // Check if id is in the range: 0-19 
     if(!(id >= 0 && id < 20)) return -1;
     // Check if this id exists
     if(OpenFileTable[id] == NULL) return -1;
     return OpenFileTable[id]->Read(buffer, size);
 }
-int CloseFile(OpenFileId id){
+int FileSystem::CloseFile(OpenFileId id){
     // Check if id is in the range: 0-19 
     if(id < 0 || id >= 20) return -1;
     // Check if this id exists
@@ -384,7 +386,7 @@ int CloseFile(OpenFileId id){
     // }
     return 1;
 }
-int search_empty_idx() {
+int FileSystem::search_empty_idx() {
     // return the empty index which is OpenFileId
     for (int idx = 0; idx < 20; idx++) {
         if (OpenFileTable[idx] == NULL) {
@@ -395,15 +397,16 @@ int search_empty_idx() {
 }
 
 
-void MakeDirectory(char *name)
+void FileSystem::MakeDirectory(char *name)
 {
 	
 }
-void Rec_ListDirectory(char *name)
+void FileSystem::Rec_ListDirectory(char *name)
 {
-	
+    // directory Name
+
 }
-void Rec_RemoveFileDirectory(char *name)
+void FileSystem::Rec_RemoveFileDirectory(char *name)
 {
 	
 }

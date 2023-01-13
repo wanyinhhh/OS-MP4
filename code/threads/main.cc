@@ -180,14 +180,13 @@ main(int argc, char **argv)
     bool dirListFlag = false;
     bool dumpFlag = false;
     // MP4
-    char *directory_to_be_created = NULL;
-    char *directory_to_be_listed = NULL;
-    char *directory_to_be_listed_recursive = NULL;
-    char *file_directory_to_be_removed = NULL;
+    char *directory_to_be_created_Name = NULL;
+    char *directory_to_be_listed_Name = NULL;
+    char *directory_to_be_listed_recursive_Name = NULL;
+    char *file_directory_to_be_removed_recursive_Name = NULL;
     bool makedirectoryFlag = false;
-    bool rec_listdirectoryFlag - false;
+    bool rec_listdirectoryFlag = false;
     bool rec_removefiledirectoryFlag = false;
-
 #endif //FILESYS_STUB
 
     // some command line arguments are handled here.
@@ -236,7 +235,8 @@ main(int argc, char **argv)
     // MP4
 	else if (strcmp(argv[i], "-l") == 0) {
         ASSERT(i + 1 < argc); 
-        directory_to_be_listed = argv[i + 1];
+        // no recursive
+        directory_to_be_listed_Name = argv[i + 1];
 	    dirListFlag = true;
         i++;
 	}
@@ -246,19 +246,23 @@ main(int argc, char **argv)
     // MP4
     else if (strcmp(argv[i], "-mkdir") == 0) {
 	    ASSERT(i + 1 < argc); 
-        directory_to_be_created = argv[i + 1];
+        directory_to_be_created_Name = argv[i + 1];
         makedirectoryFlag = true;
 	    i++;
 	}
 	else if (strcmp(argv[i], "-lr") == 0) {
         ASSERT(i + 1 < argc); 
-        directory_to_be_listed_recursive = argv[i + 1];
+        // recursive
+        directory_to_be_listed_recursive_Name = argv[i + 1];
 	    rec_listdirectoryFlag = true;
+        i++;
 	}
     else if (strcmp(argv[i], "-rr") == 0) {
-        ASSERT(i + 1 < argc); 
-        file_directory_to_be_removed = argv[i + 1];
+        ASSERT(i + 1 < argc);
+        // recursive 
+        file_directory_to_be_removed_recursive_Name = argv[i + 1];
 	    rec_removefiledirectoryFlag = true;
+        i++;
 	}
 
 #endif //FILESYS_STUB
@@ -314,13 +318,15 @@ main(int argc, char **argv)
     }
     // MP4
     if (makedirectoryFlag) {
-        kernel->fileSystem->MakeDirectory(directory_to_be_created);
+        kernel->fileSystem->MakeDirectory(directory_to_be_created_Name);
     }
     if (rec_listdirectoryFlag) {
-        kernel->fileSystem->Rec_ListDirectory(directory_to_be_listed);
+        // like kernel->fileSystem->List();
+        kernel->fileSystem->Rec_ListDirectory(directory_to_be_listed_Name);   
     }
     if (rec_removefiledirectoryFlag) {
-        kernel->fileSystem->Rec_RemoveFileDirectory(file_directory_to_be_removed);
+        // like kernel->fileSystem->Remove(removeFileName);
+        kernel->fileSystem->Rec_RemoveFileDirectory(file_directory_to_be_removed_recursive_Name);
     }
     
 
