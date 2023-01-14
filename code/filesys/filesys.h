@@ -75,6 +75,7 @@ class FileSystem {
     
 //  The OpenAFile function is used for kernel open system call
   // MP1
+  typedef int OpenFileId;
   OpenFileId OpenAFile(char *name) {
         int sector = OpenForReadWrite(name, FALSE);
         if(sector == -1) return -1;
@@ -156,7 +157,7 @@ class FileSystem {
     OpenFile* Open(char *name); 	// Open a file (UNIX open)
 
     // NachOS FS
-    // MP4
+    typedef int OpenFileId;
     OpenFileId OpenAFile(char *name);
     int WriteFile(char *buffer, int size, OpenFileId id);
     int ReadFile(char *buffer, int size, OpenFileId id);
@@ -165,6 +166,7 @@ class FileSystem {
     void MakeDirectory(char *name);
     void Rec_ListDirectory(char *name);
     void Rec_RemoveFileDirectory(char *name);
+    bool extend(OpenFile *file, int numBytes);
     // Max Open File = 20
     OpenFile *OpenFileTable[20];
     char* OpenFileName[20];
@@ -174,6 +176,7 @@ class FileSystem {
     void List();			// List all the files in the file system
 
     void Print();			// List all the files and their contents
+
 
 
   private:

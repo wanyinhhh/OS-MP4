@@ -191,9 +191,9 @@
 # of "-DSIM_FIX" to the DEFINES.  This should be enabled by default
 # and eventually will not require the symbol definition
 ################################################################
-DEFINES =  -DFILESYS_STUB -DRDATA -DSIM_FIX
+#DEFINES =  -DFILESYS_STUB -DRDATA -DSIM_FIX
 
-
+DEFINES = -DRDATA -DSIM_FIX
 #####################################################################
 #
 # You might want to play with the CFLAGS, but if you use -O it may

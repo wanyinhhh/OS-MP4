@@ -119,6 +119,7 @@ Disk::ReadRequest(int sectorNumber, char* data)
     ASSERT((sectorNumber >= 0) && (sectorNumber < NumSectors));
     
     DEBUG(dbgDisk, "Reading from sector " << sectorNumber);
+    DEBUG(dbgFile, "Reading from sector " << sectorNumber);
     Lseek(fileno, SectorSize * sectorNumber + MagicSize, 0);
     Read(fileno, data, SectorSize);
     if (debug->IsEnabled('d'))
@@ -139,6 +140,7 @@ Disk::WriteRequest(int sectorNumber, char* data)
     ASSERT((sectorNumber >= 0) && (sectorNumber < NumSectors));
     
     DEBUG(dbgDisk, "Writing to sector " << sectorNumber);
+    DEBUG(dbgFile, "Writing to sector " << sectorNumber);
     Lseek(fileno, SectorSize * sectorNumber + MagicSize, 0);
     WriteFile(fileno, data, SectorSize);
     if (debug->IsEnabled('d'))

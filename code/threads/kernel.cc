@@ -26,6 +26,7 @@
 
 Kernel::Kernel(int argc, char **argv)
 {
+    cout << "test\n";
     randomSlice = FALSE; 
     debugUserProg = FALSE;
     consoleIn = NULL;          // default is stdin
@@ -57,6 +58,7 @@ Kernel::Kernel(int argc, char **argv)
 	    	i++;
 #ifndef FILESYS_STUB
 		} else if (strcmp(argv[i], "-f") == 0) {
+            cout << "test\n"; 
 	    	formatFlag = TRUE;
 #endif
         } else if (strcmp(argv[i], "-n") == 0) {

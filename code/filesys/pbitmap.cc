@@ -8,6 +8,7 @@
 
 #include "copyright.h"
 #include "pbitmap.h"
+#include "debug.h"
 
 //----------------------------------------------------------------------
 // PersistentBitmap::PersistentBitmap(int)
@@ -75,5 +76,6 @@ PersistentBitmap::FetchFrom(OpenFile *file)
 void
 PersistentBitmap::WriteBack(OpenFile *file)
 {
+    DEBUG(dbgFile, "PersistentBitmap::WriteBack.");
    file->WriteAt((char *)map, numWords * sizeof(unsigned), 0);
 }

@@ -23,6 +23,7 @@
 #include "utility.h"
 #include "filehdr.h"
 #include "directory.h"
+#include "debug.h"
 
 //----------------------------------------------------------------------
 // Directory::Directory
@@ -36,6 +37,7 @@
 
 Directory::Directory(int size)
 {
+    
     table = new DirectoryEntry[size];
     tableSize = size;
     for (int i = 0; i < tableSize; i++)
@@ -75,6 +77,7 @@ Directory::FetchFrom(OpenFile *file)
 void
 Directory::WriteBack(OpenFile *file)
 {
+    DEBUG(dbgFile, "Directory::WriteBack");
     (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
 }
 

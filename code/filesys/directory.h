@@ -19,6 +19,7 @@
 
 #include "openfile.h"
 
+// #define increaseSize      10
 #define FileNameMaxLen 		9	// for simplicity, we assume 
 					// file names are <= 9 characters long
 

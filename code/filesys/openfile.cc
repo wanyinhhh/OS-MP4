@@ -73,7 +73,7 @@ OpenFile::Seek(int position)
 int
 OpenFile::Read(char *into, int numBytes)
 {
-    //cout << "Test!" <<＂\n＂; 
+    //cout << "Test!" <<'\n'; 
    int result = ReadAt(into, numBytes, seekPosition);
    seekPosition += result;
    return result;
@@ -82,7 +82,7 @@ OpenFile::Read(char *into, int numBytes)
 int
 OpenFile::Write(char *into, int numBytes)
 {
-   cout << "Test!" <<＂\n＂; 
+//    cout << "Test!" <<'\n'; 
    int result = WriteAt(into, numBytes, seekPosition);
    seekPosition += result;
    return result;
@@ -118,6 +118,7 @@ int
 OpenFile::ReadAt(char *into, int numBytes, int position)
 {
     int fileLength = hdr->FileLength();
+    // int fileLength = Length();
     int i, firstSector, lastSector, numSectors;
     char *buf;
 
@@ -146,24 +147,36 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
 int
 OpenFile::WriteAt(char *from, int numBytes, int position)
 {
-    // int fileLength = hdr->FileLength();
-    int fileLength = Length();
+    int fileLength = hdr->FileLength();
+    // int fileLength = Length();
     int i, firstSector, lastSector, numSectors;
     bool firstAligned, lastAligned;
     char *buf;
 
     if ((numBytes <= 0) || (position >= fileLength))
 	return 0;				// check request
-    if ((position + numBytes) > fileLength)
-	numBytes = fileLength - position;
-    DEBUG(dbgFile, "Writing " << numBytes << " bytes at " << position << " from file of length " << fileLength);
+
+
+    // extend current file size
+    DEBUG(dbgFile, "extend current file size.");
+    if(position + numBytes > fileLength){
+        if(kernel->fileSystem->extend(this, position + numBytes - fileLength)){ //??
+            cout<<"Extend file size succeeds!\n"<<endl;
+        }
+        else cout<<"Extend file size fails!\n"<<endl;
+    }
+
+        // cout <<"1111111111\n";
+    // if ((position + numBytes) > fileLength)
+	// numBytes = fileLength - position;
+    // DEBUG(dbgFile, "Writing " << numBytes << " bytes at " << position << " from file of length " << fileLength);
 
     firstSector = divRoundDown(position, SectorSize);
     lastSector = divRoundDown(position + numBytes - 1, SectorSize);
     numSectors = 1 + lastSector - firstSector;
 
     buf = new char[numSectors * SectorSize];
-
+        cout <<"22222\n";
     firstAligned = (position == (firstSector * SectorSize));
     lastAligned = ((position + numBytes) == ((lastSector + 1) * SectorSize));
 
@@ -183,6 +196,7 @@ OpenFile::WriteAt(char *from, int numBytes, int position)
 					&buf[(i - firstSector) * SectorSize]);
     delete [] buf;
     return numBytes;
+    cout <<"3333333333\n";
 }
 
 //----------------------------------------------------------------------

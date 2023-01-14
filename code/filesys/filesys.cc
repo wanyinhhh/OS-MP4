@@ -62,7 +62,7 @@
 // supports extensible files, the directory size sets the maximum number 
 // of files that can be loaded onto the disk.
 #define FreeMapFileSize 	(NumSectors / BitsInByte)
-#define NumDirEntries 		10 
+#define NumDirEntries 		10
 #define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
 
 //----------------------------------------------------------------------
@@ -339,6 +339,7 @@ FileSystem::Print()
 
 
 // MP4
+typedef int OpenFileId;
 OpenFileId FileSystem::OpenAFile(char *name) {
     int sector = OpenForReadWrite(name, FALSE);
     if(sector == -1) return -1;
@@ -404,11 +405,24 @@ void FileSystem::MakeDirectory(char *name)
 void FileSystem::Rec_ListDirectory(char *name)
 {
     // directory Name
-
 }
 void FileSystem::Rec_RemoveFileDirectory(char *name)
 {
 	
+}
+
+
+// MP4
+bool FileSystem::extend(OpenFile *file, int numBytes){
+
+    PersistentBitmap *freeMap = new PersistentBitmap(freeMapFile, NumSectors);
+    FileHeader *fileHdr = file->hdr;
+
+    bool result = fileHdr->ExtendFileSize(freeMap, numBytes);
+    if(result == TRUE) {
+        freeMap->WriteBack(freeMapFile);
+    }
+    return result;
 }
 
 #endif // FILESYS_STUB

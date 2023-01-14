@@ -87,9 +87,9 @@ class OpenFile {
 					// file (this interface is simpler 
 					// than the UNIX idiom -- lseek to 
 					// end of file, tell, lseek back 
-    
-  private:
     FileHeader *hdr;			// Header for this file 
+  private:
+    
     int seekPosition;			// Current position within the file
 };
 
